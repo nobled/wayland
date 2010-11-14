@@ -433,9 +433,9 @@ display_create_surface(struct display *display,
 		       struct rectangle *rectangle)
 {
 #ifdef HAVE_CAIRO_GL
-	display_create_drm_surface(display, rectangle);
+	return display_create_drm_surface(display, rectangle);
 #else
-	display_create_shm_surface(display, rectangle);
+	return display_create_shm_surface(display, rectangle);
 #endif
 }
 
@@ -445,9 +445,9 @@ display_create_surface_from_file(struct display *display,
 				 struct rectangle *rectangle)
 {
 #ifdef HAVE_CAIRO_GL
-	display_create_drm_surface_from_file(display, filename, rectangle);
+	return display_create_drm_surface_from_file(display, filename, rectangle);
 #else
-	display_create_shm_surface_from_file(display, filename, rectangle);
+	return display_create_shm_surface_from_file(display, filename, rectangle);
 #endif
 }
 
