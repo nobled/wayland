@@ -161,7 +161,8 @@ wl_event_source_timer_dispatch(struct wl_event_source *source,
 		(struct wl_event_source_timer *) source;
 	uint64_t expires;
 
-	read(timer_source->fd, &expires, sizeof expires);
+	/* XXX: What to do if there's an error returned here? */
+	(void) read(timer_source->fd, &expires, sizeof expires);
 
 	timer_source->func(timer_source->data);
 }
@@ -257,7 +258,8 @@ wl_event_source_signal_dispatch(struct wl_event_source *source,
 		(struct wl_event_source_signal *) source;
 	struct signalfd_siginfo signal_info;
 
-	read(signal_source->fd, &signal_info, sizeof signal_info);
+	/* XXX: What to do if there's an error returned here? */
+	(void) read(signal_source->fd, &signal_info, sizeof signal_info);
 
 	signal_source->func(signal_source->signal_number, signal_source->data);
 }
