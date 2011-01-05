@@ -88,6 +88,10 @@ wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 {
 	struct wl_closure *closure;
 	va_list ap;
+	assert(client != NULL && sender != NULL &&
+	       "wl_client_post_event called with NULL value!");
+	if (client == NULL || sender == NULL)
+		return;
 
 	va_start(ap, opcode);
 	closure = wl_connection_vmarshal(client->connection,
@@ -197,6 +201,11 @@ wl_client_connection_update(struct wl_connection *connection,
 WL_EXPORT struct wl_display *
 wl_client_get_display(struct wl_client *client)
 {
+	assert(client != NULL &&
+	       "wl_client_get_display called with NULL value!");
+	if (client == NULL)
+		return NULL;
+
 	return client->display;
 }
 
@@ -249,7 +258,14 @@ WL_EXPORT void
 wl_client_add_resource(struct wl_client *client,
 		       struct wl_resource *resource)
 {
-	struct wl_display *display = client->display;
+	struct wl_display *display;
+
+	assert(client != NULL && resource != NULL &&
+	       "wl_client_add_resource called with NULL value!");
+	if (client == NULL || resource == NULL)
+		return;
+
+	display = client->display;
 
 	if (client->id_count-- < 64)
 		wl_display_post_range(display, client);
@@ -262,6 +278,11 @@ wl_client_add_resource(struct wl_client *client,
 WL_EXPORT void
 wl_client_post_no_memory(struct wl_client *client)
 {
+	assert(client != NULL &&
+	       "wl_client_post_no_memory called with NULL value!");
+	if (client == NULL )
+		return;
+
 	wl_client_post_event(client,
 			     &client->display->object,
 			     WL_DISPLAY_NO_MEMORY);
@@ -270,6 +291,11 @@ wl_client_post_no_memory(struct wl_client *client)
 WL_EXPORT void
 wl_client_post_global(struct wl_client *client, struct wl_object *object)
 {
+	assert(client != NULL && object != NULL &&
+	       "wl_client_post_global called with NULL value!");
+	if (client == NULL || object == NULL)
+		return;
+
 	wl_client_post_event(client,
 			     &client->display->object,
 			     WL_DISPLAY_GLOBAL,
@@ -281,7 +307,14 @@ wl_client_post_global(struct wl_client *client, struct wl_object *object)
 WL_EXPORT void
 wl_resource_destroy(struct wl_resource *resource, struct wl_client *client)
 {
-	struct wl_display *display = client->display;
+	struct wl_display *display;
+
+	assert(client != NULL && resource != NULL &&
+	       "wl_resource_destroy called with NULL value!");
+	if (client == NULL || resource == NULL)
+		return;
+
+	display = client->display;
 
 	wl_list_remove(&resource->link);
 	if (resource->object.id > 0)
@@ -295,6 +328,11 @@ wl_client_destroy(struct wl_client *client)
 	struct wl_resource *resource, *tmp;
 
 	printf("disconnect from client %p\n", client);
+
+	assert(client != NULL &&
+	       "wl_client_destroy called with NULL value!");
+	if (client == NULL)
+		return;
 
 	wl_list_for_each_safe(resource, tmp, &client->resource_list, link)
 		wl_resource_destroy(resource, client);
@@ -330,6 +368,11 @@ WL_EXPORT void
 wl_input_device_init(struct wl_input_device *device,
 		     struct wl_compositor *compositor)
 {
+	assert(device != NULL && compositor != NULL &&
+	       "wl_input_device_init called with NULL value!");
+	if (device == NULL || compositor == NULL)
+		return;
+
 	wl_list_init(&device->pointer_focus_listener.link);
 	device->pointer_focus_listener.func = lose_pointer_focus;
 	wl_list_init(&device->keyboard_focus_listener.link);
@@ -347,6 +390,11 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 				  int32_t x, int32_t y,
 				  int32_t sx, int32_t sy)
 {
+	assert(device != NULL &&
+	       "wl_input_device_set_pointer_focus called with NULL value!");
+	if (device == NULL)
+		return;
+
 	if (device->pointer_focus == surface)
 		return;
 
@@ -376,6 +424,11 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 				   struct wl_surface *surface,
 				   uint32_t time)
 {
+	assert(device != NULL &&
+	       "wl_input_device_set_keyboard_focus called with NULL value!");
+	if (device == NULL)
+		return;
+
 	if (device->keyboard_focus == surface)
 		return;
 
@@ -496,6 +549,11 @@ wl_display_destroy(struct wl_display *display)
 {
 	struct wl_socket *s, *next;
 
+	assert(display != NULL &&
+	       "wl_display_destroy called with NULL value!");
+	if (display == NULL)
+		return;
+
 	wl_event_loop_destroy(display->loop);
 	wl_hash_table_destroy(display->objects);
 	
@@ -511,6 +569,11 @@ wl_display_destroy(struct wl_display *display)
 WL_EXPORT void
 wl_display_add_object(struct wl_display *display, struct wl_object *object)
 {
+	assert(display != NULL && object != NULL &&
+	       "wl_display_add_object called with NULL value!");
+	if (display == NULL || object == NULL)
+		return;
+
 	object->id = display->id++;
 	wl_hash_table_insert(display->objects, object->id, object);
 }
@@ -520,6 +583,11 @@ wl_display_add_global(struct wl_display *display,
 		      struct wl_object *object, wl_client_connect_func_t func)
 {
 	struct wl_global *global;
+
+	assert(display != NULL && object != NULL && func != NULL &&
+	       "wl_display_add_global called with NULL value!");
+	if (display == NULL || object == NULL || func != NULL)
+		return -1;
 
 	global = malloc(sizeof *global);
 	if (global == NULL)
@@ -536,6 +604,10 @@ WL_EXPORT void
 wl_display_post_frame(struct wl_display *display, uint32_t time)
 {
 	struct wl_frame_listener *listener, *next;
+	assert(display != NULL &&
+	       "wl_display_post_frame called with NULL value!");
+	if (display == NULL)
+		return;
 
 	wl_list_for_each_safe(listener, next, &display->frame_list, link) {
 		wl_client_post_event(listener->client, &display->object,
@@ -547,18 +619,33 @@ wl_display_post_frame(struct wl_display *display, uint32_t time)
 WL_EXPORT struct wl_event_loop *
 wl_display_get_event_loop(struct wl_display *display)
 {
+	assert(display != NULL &&
+	       "wl_display_get_event_loop called with NULL value!");
+	if (display == NULL)
+		return NULL;
+
 	return display->loop;
 }
 
 WL_EXPORT void
 wl_display_terminate(struct wl_display *display)
 {
+	assert(display != NULL &&
+	       "wl_display_terminate called with NULL value!");
+	if (display == NULL)
+		return;
+
 	display->run = 0;
 }
 
 WL_EXPORT void
 wl_display_run(struct wl_display *display)
 {
+	assert(display != NULL &&
+	       "wl_display_run called with NULL value!");
+	if (display == NULL)
+		return;
+
 	display->run = 1;
 
 	while (display->run)
@@ -587,6 +674,11 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	struct wl_socket *s;
 	socklen_t size, name_size;
 	const char *runtime_dir;
+
+	assert(display != NULL &&
+	       "wl_display_add_socket called with NULL value!");
+	if (display == NULL)
+		return -1;
 
 	s = malloc(sizeof *s);
 	if (socket == NULL)
@@ -635,6 +727,11 @@ wl_compositor_init(struct wl_compositor *compositor,
 		   const struct wl_compositor_interface *interface,
 		   struct wl_display *display)
 {
+	assert(compositor != NULL && interface != NULL && display != NULL &&
+	       "wl_compositor_init called with NULL value!");
+	if (!(compositor != NULL && interface != NULL && display != NULL))
+		return -1;
+
 	compositor->object.interface = &wl_compositor_interface;
 	compositor->object.implementation = (void (**)(void)) interface;
 	wl_display_add_object(display, &compositor->object);

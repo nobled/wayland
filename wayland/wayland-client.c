@@ -115,6 +115,10 @@ wl_display_add_global_listener(struct wl_display *display,
 {
 	struct wl_global_listener *listener;
 
+	assert(display != NULL && "wl_display_add_global_listener called with NULL!");
+	if (display == NULL)
+		return NULL;
+
 	listener = malloc(sizeof *listener);
 	if (listener == NULL)
 		return NULL;
@@ -130,6 +134,11 @@ WL_EXPORT void
 wl_display_remove_global_listener(struct wl_display *display,
 				  struct wl_global_listener *listener)
 {
+	assert(display != NULL && listener != NULL &&
+	       "wl_display_remove_global_listener called with NULL!");
+	if (listener == NULL)
+		return;
+
 	wl_list_remove(&listener->link);
 	free(listener);
 }
@@ -139,6 +148,11 @@ wl_proxy_create_for_id(struct wl_display *display,
 		       const struct wl_interface *interface, uint32_t id)
 {
 	struct wl_proxy *proxy;
+
+	assert(display != NULL && interface != NULL &&
+	       "wl_proxy_create_for_id called with NULL!");
+	if (display == NULL || interface == NULL)
+		return NULL;
 
 	proxy = malloc(sizeof *proxy);
 	if (proxy == NULL)
@@ -157,6 +171,9 @@ WL_EXPORT struct wl_proxy *
 wl_proxy_create(struct wl_proxy *factory,
 		const struct wl_interface *interface)
 {
+	assert(factory != NULL && "wl_proxy_create called with NULL value!");
+	if (factory == NULL)
+		return NULL;
 	return wl_proxy_create_for_id(factory->display, interface,
 				      wl_display_allocate_id(factory->display));
 }
@@ -165,6 +182,10 @@ WL_EXPORT void
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
 	struct wl_listener *listener, *next;
+
+	assert(proxy != NULL && "wl_proxy_destroy called with NULL value!");
+	if (proxy == NULL)
+		return;
 
 	wl_list_for_each_safe(listener, next, &proxy->listener_list, link)
 		free(listener);
@@ -178,6 +199,11 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
 		      void (**implementation)(void), void *data)
 {
 	struct wl_listener *listener;
+
+	assert(proxy != NULL && implementation != NULL &&
+	       "wl_proxy_add_listener called with NULL value!");
+	if (proxy == NULL)
+		return -1;
 
 	listener = malloc(sizeof *listener);
 	if (listener == NULL)
@@ -195,6 +221,11 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 {
 	struct wl_closure *closure;
 	va_list ap;
+
+	assert(proxy != NULL &&
+	       "wl_proxy_marshal called with NULL value!");
+	if (proxy == NULL)
+		return;
 
 	va_start(ap, opcode);
 	closure = wl_connection_vmarshal(proxy->display->connection,
@@ -224,18 +255,33 @@ add_visual(struct wl_display *display, uint32_t id)
 WL_EXPORT struct wl_visual *
 wl_display_get_argb_visual(struct wl_display *display)
 {
+	assert(display != NULL &&
+	       "wl_display_get_argb_visual called with NULL value!");
+	if (display == NULL)
+		return NULL;
+
 	return display->argb_visual;
 }
 
 WL_EXPORT struct wl_visual *
 wl_display_get_premultiplied_argb_visual(struct wl_display *display)
 {
+	assert(display != NULL &&
+	       "wl_display_get_premultiplied_argb_visual called with NULL value!");
+	if (display == NULL)
+		return NULL;
+
 	return display->premultiplied_argb_visual;
 }
 
 WL_EXPORT struct wl_visual *
 wl_display_get_rgb_visual(struct wl_display *display)
 {
+	assert(display != NULL &&
+	       "wl_display_get_rgb_visual called with NULL value!");
+	if (display == NULL)
+		return NULL;
+
 	return display->rgb_visual;
 }
 
@@ -398,6 +444,11 @@ wl_display_connect(const char *name)
 WL_EXPORT void
 wl_display_destroy(struct wl_display *display)
 {
+	assert(display != NULL &&
+	       "wl_display_destroy called with NULL value!");
+	if (display == NULL)
+		return;
+
 	wl_connection_destroy(display->connection);
 	close(display->fd);
 	free(display);
@@ -407,6 +458,11 @@ WL_EXPORT int
 wl_display_get_fd(struct wl_display *display,
 		  wl_display_update_func_t update, void *data)
 {
+	assert(display != NULL && update != NULL &&
+	       "wl_display_get_fd called with NULL value!");
+	if (display == NULL)
+		return -1;
+
 	display->update = update;
 	display->update_data = data;
 
@@ -420,6 +476,11 @@ wl_display_sync_callback(struct wl_display *display,
 			 wl_display_sync_func_t func, void *data)
 {
 	struct wl_sync_handler *handler;
+
+	assert(display != NULL && func != NULL &&
+	       "wl_display_sync_callback called with NULL value!");
+	if (display == NULL)
+		return -1;
 
 	handler = malloc(sizeof *handler);
 	if (handler == NULL)
@@ -440,6 +501,11 @@ wl_display_frame_callback(struct wl_display *display,
 			  wl_display_frame_func_t func, void *data)
 {
 	struct wl_frame_handler *handler;
+
+	assert(display != NULL && func != NULL &&
+	       "wl_display_frame_callback called with NULL value!");
+	if (display == NULL)
+		return -1;
 
 	handler = malloc(sizeof *handler);
 	if (handler == NULL)
@@ -494,6 +560,11 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 	uint32_t p[2], object, opcode, size;
 	int len;
 
+	assert(display != NULL &&
+	       "wl_display_iterate called with NULL value!");
+	if (display == NULL)
+		return;
+
 	len = wl_connection_data(display->connection, mask);
 	while (len > 0) {
 		if (len < sizeof p)
@@ -519,6 +590,9 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 WL_EXPORT uint32_t
 wl_display_allocate_id(struct wl_display *display)
 {
+	assert(display != NULL &&
+	       "wl_display_allocate_id called with NULL value!");
+
 	if (display->id_count == 0) {
 		display->id_count = 256;
 		display->id = display->next_range;
@@ -532,11 +606,19 @@ wl_display_allocate_id(struct wl_display *display)
 WL_EXPORT void
 wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data)
 {
+	assert(proxy != NULL &&
+	       "wl_proxy_set_user_data called with NULL value!");
+	if (proxy == NULL)
+		return;
 	proxy->user_data = user_data;
 }
 
 WL_EXPORT void *
 wl_proxy_get_user_data(struct wl_proxy *proxy)
 {
+	assert(proxy != NULL &&
+	       "wl_proxy_set_user_data called with NULL value!");
+	if (proxy == NULL)
+		return NULL;
 	return proxy->user_data;
 }
