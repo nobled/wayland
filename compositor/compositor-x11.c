@@ -222,7 +222,7 @@ x11_compositor_init_egl(struct x11_compositor *c)
 	};
 
 	if (dri2_connect(c) < 0)
-		return -1;
+		goto no_egl_drm;
 
 	if (drmGetMagic(c->base.drm.fd, &magic)) {
 		fprintf(stderr, "DRI2: failed to get drm magic\n");
@@ -233,7 +233,12 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		return -1;
 
 	c->base.display = eglGetDRMDisplayMESA(c->base.drm.fd);
-	if (c->base.display == NULL) {
+
+no_egl_drm:
+	if (c->base.display == EGL_NO_DISPLAY)
+		c->base.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+
+	if (c->base.display == EGL_NO_DISPLAY) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
 	}

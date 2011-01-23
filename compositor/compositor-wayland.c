@@ -105,11 +105,14 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 	EGLint major, minor;
 	const char *extensions;
 	drm_magic_t magic;
-	int fd;
+	int fd = -1;
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
+
+	if (c->parent.device_name == NULL)
+		goto no_egl_drm;
 
 	fd = open(c->parent.device_name, O_RDWR);
 	if (fd < 0) {
@@ -125,12 +128,18 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 	}
 
 	wl_drm_authenticate(c->parent.drm, magic);
+
 	wl_display_iterate(c->parent.display, WL_DISPLAY_WRITABLE);
 	while (!c->parent.authenticated)
 		wl_display_iterate(c->parent.display, WL_DISPLAY_READABLE);
 
 	c->base.display = eglGetDRMDisplayMESA(fd);
-	if (c->base.display == NULL) {
+
+no_egl_drm:
+	if (c->base.display == EGL_NO_DISPLAY)
+		c->base.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+
+	if (c->base.display == EGL_NO_DISPLAY) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
 	}
