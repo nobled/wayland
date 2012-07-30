@@ -207,8 +207,9 @@ wl_map_insert_at(struct wl_map *map, uint32_t i, void *data)
 	if (count < i)
 		return -1;
 
-	if (count == i)
-		wl_array_add(entries, sizeof *start);
+	if (count == i &&
+	    !wl_array_add(entries, sizeof *start))
+		return -1;
 
 	start = entries->data;
 	start[i].data = data;
