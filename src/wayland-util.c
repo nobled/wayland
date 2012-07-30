@@ -132,12 +132,14 @@ wl_array_add(struct wl_array *array, size_t size)
 	return p;
 }
 
-WL_EXPORT void
+WL_EXPORT int
 wl_array_copy(struct wl_array *array, struct wl_array *source)
 {
 	array->size = 0;
-	wl_array_add(array, source->size);
+	if (!wl_array_add(array, source->size))
+		return -1;
 	memcpy(array->data, source->data, source->size);
+	return 0;
 }
 
 union map_entry {
