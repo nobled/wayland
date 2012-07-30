@@ -510,7 +510,7 @@ create_proxies(struct wl_display *display, struct wl_closure *closure)
 	return 0;
 }
 
-static void
+static int
 handle_event(struct wl_display *display,
 	     uint32_t id, uint32_t opcode, uint32_t size)
 {
@@ -522,29 +522,31 @@ handle_event(struct wl_display *display,
 
 	if (proxy == WL_ZOMBIE_OBJECT) {
 		wl_connection_consume(display->connection, size);
-		return;
+		return 0;
 	} else if (proxy == NULL || proxy->object.implementation == NULL) {
 		wl_connection_consume(display->connection, size);
-		return;
+		return 0;
 	}
 
 	message = &proxy->object.interface->events[opcode];
 	closure = wl_connection_demarshal(display->connection, size,
 					  &display->objects, message);
 
+	if (closure == NULL || create_proxies(display, closure) < 0) {
+		wl_log("Error demarshalling event\n");
+		return -1;
+	}
+
 	if (wl_debug)
 		wl_closure_print(closure, &proxy->object, false);
-
-	if (closure == NULL || create_proxies(display, closure) < 0) {
-		fprintf(stderr, "Error demarshalling event\n");
-		abort();
-	}
 
 	wl_closure_invoke(closure, &proxy->object,
 			  proxy->object.implementation[opcode],
 			  proxy->user_data);
 
 	wl_closure_destroy(closure);
+
+	return 0;
 }
 
 WL_EXPORT int
@@ -563,7 +565,14 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 
 	len = wl_connection_data(display->connection, mask);
 
+	if (len < 0) {
+		wl_log("read error: %m\n");
+		return len;
+	}
+
 	while (len > 0) {
+		int ret;
+
 		if ((size_t) len < sizeof p)
 			break;
 		
@@ -574,13 +583,13 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 		if (len < size)
 			break;
 
-		handle_event(display, object, opcode, size);
+		ret = handle_event(display, object, opcode, size);
+		if (ret)
+			return ret;
+
 		len -= size;
 	}
 
-	if (len < 0) {
-		fprintf(stderr, "read error: %m\n");
-	}
 	return len;
 }
 
