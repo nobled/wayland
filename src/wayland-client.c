@@ -593,11 +593,18 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 	return len;
 }
 
-WL_EXPORT void
+WL_EXPORT int
 wl_display_flush(struct wl_display *display)
 {
-	while (display->mask & WL_DISPLAY_WRITABLE)
-		wl_display_iterate (display, WL_DISPLAY_WRITABLE);
+	int ret;
+
+	while (display->mask & WL_DISPLAY_WRITABLE) {
+		ret = wl_display_iterate (display, WL_DISPLAY_WRITABLE);
+		if (ret)
+			break;
+	}
+
+	return ret;
 }
 
 WL_EXPORT void *

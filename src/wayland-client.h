@@ -77,7 +77,7 @@ void wl_display_disconnect(struct wl_display *display);
 int wl_display_get_fd(struct wl_display *display,
 		      wl_display_update_func_t update, void *data);
 int wl_display_iterate(struct wl_display *display, uint32_t mask);
-void wl_display_flush(struct wl_display *display);
+int wl_display_flush(struct wl_display *display);
 void wl_display_roundtrip(struct wl_display *display);
 
 struct wl_global_listener;
