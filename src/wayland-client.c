@@ -166,16 +166,22 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	return proxy;
 }
 
-WL_EXPORT void
+WL_EXPORT int
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
+	int ret;
 	if (proxy->object.id < WL_SERVER_ID_START)
-		wl_map_insert_at(&proxy->display->objects,
-				 proxy->object.id, WL_ZOMBIE_OBJECT);
+		ret = wl_map_insert_at(&proxy->display->objects,
+		                       proxy->object.id, WL_ZOMBIE_OBJECT);
 	else
-		wl_map_insert_at(&proxy->display->objects,
-				 proxy->object.id, NULL);
-	free(proxy);
+		ret = wl_map_insert_at(&proxy->display->objects,
+		                       proxy->object.id, NULL);
+	if (ret)
+		wl_log("Could not destroy proxy %u\n", proxy->object.id);
+	else
+		free(proxy);
+
+	return ret;
 }
 
 WL_EXPORT int

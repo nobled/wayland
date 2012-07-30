@@ -40,7 +40,7 @@ struct wl_proxy *wl_proxy_create_for_id(struct wl_proxy *factory,
 					uint32_t id,
 					const struct wl_interface *interface);
 
-void wl_proxy_destroy(struct wl_proxy *proxy);
+int wl_proxy_destroy(struct wl_proxy *proxy);
 int wl_proxy_add_listener(struct wl_proxy *proxy,
 			  void (**implementation)(void), void *data);
 void wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
