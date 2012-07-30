@@ -184,8 +184,12 @@ wl_map_insert_new(struct wl_map *map, uint32_t side, void *data)
 		start = entries->data;
 	}
 
+	if (!entry)
+		return 0;
+
 	entry->data = data;
 
+	assert(entry > start);
 	return (entry - start) + base;
 }
 
