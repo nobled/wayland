@@ -33,7 +33,7 @@ extern "C" {
 struct wl_proxy;
 struct wl_display;
 
-void wl_proxy_marshal(struct wl_proxy *p, uint32_t opcode, ...);
+int wl_proxy_marshal(struct wl_proxy *p, uint32_t opcode, ...);
 struct wl_proxy *wl_proxy_create(struct wl_proxy *factory,
 				 const struct wl_interface *interface);
 struct wl_proxy *wl_proxy_create_for_id(struct wl_proxy *factory,

@@ -187,11 +187,12 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
 	return 0;
 }
 
-WL_EXPORT void
+WL_EXPORT int
 wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 {
 	struct wl_closure *closure;
 	va_list ap;
+	int ret = 0;
 
 	va_start(ap, opcode);
 	closure = wl_closure_vmarshal(&proxy->object, opcode, ap,
@@ -200,18 +201,18 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 
 	if (closure == NULL) {
 		fprintf(stderr, "Error marshalling request\n");
-		abort();
+		return -1;
 	}
 
 	if (wl_debug)
 		wl_closure_print(closure, &proxy->object, true);
 
-	if (wl_closure_send(closure, proxy->display->connection)) {
+	if ((ret = wl_closure_send(closure, proxy->display->connection))) {
 		fprintf(stderr, "Error sending request: %m\n");
-		abort();
 	}
 
 	wl_closure_destroy(closure);
+	return ret;
 }
 
 /* Can't do this, there may be more than one instance of an
