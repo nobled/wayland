@@ -461,18 +461,29 @@ static const struct wl_callback_listener sync_listener = {
 	sync_callback
 };
 
-WL_EXPORT void
+WL_EXPORT int
 wl_display_roundtrip(struct wl_display *display)
 {
 	struct wl_callback *callback;
-	int done;
+	int ret, done;
+
+	callback = wl_display_sync(display);
+	if (!callback)
+		return -1;
 
 	done = 0;
-	callback = wl_display_sync(display);
-	wl_callback_add_listener(callback, &sync_listener, &done);
-	wl_display_flush(display);
-	while (!done)
-		wl_display_iterate(display, WL_DISPLAY_READABLE);
+	ret = wl_callback_add_listener(callback, &sync_listener, &done);
+	if (ret)
+		return ret;
+
+	ret = wl_display_flush(display);
+	if (ret)
+		return ret;
+
+	while (!done && ret == 0)
+		ret = wl_display_iterate(display, WL_DISPLAY_READABLE);
+
+	return ret;
 }
 
 static int
