@@ -547,7 +547,7 @@ handle_event(struct wl_display *display,
 	wl_closure_destroy(closure);
 }
 
-WL_EXPORT void
+WL_EXPORT int
 wl_display_iterate(struct wl_display *display, uint32_t mask)
 {
 	uint32_t p[2], object;
@@ -557,7 +557,8 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 	if (mask == 0) {
 		fprintf(stderr,
 			"wl_display_iterate called with unsolicited flags\n");
-		return;
+		errno = EINVAL;
+		return -1;
 	}
 
 	len = wl_connection_data(display->connection, mask);
@@ -579,8 +580,8 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 
 	if (len < 0) {
 		fprintf(stderr, "read error: %m\n");
-		exit(EXIT_FAILURE);
 	}
+	return len;
 }
 
 WL_EXPORT void
