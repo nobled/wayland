@@ -580,16 +580,19 @@ wl_closure_vmarshal(struct wl_object *sender,
 			fd = va_arg(ap, int);
 			dup_fd = wl_os_dupfd_cloexec(fd, 0);
 			if (dup_fd < 0) {
-				fprintf(stderr, "dup failed: %m");
-				abort();
+				wl_log("dup failed: %m\n");
+				free(closure);
+				return NULL;
 			}
 			*fd_ptr = dup_fd;
 			break;
 		default:
-			fprintf(stderr, "unhandled format code: '%c'\n",
-				arg.type);
-			assert(0);
-			break;
+			wl_log("unknown protocol argument type '%c' in %s\n",
+			       arg.type, __func__);
+			assert(0 && "unknown protocol argument type");
+			errno = EPROTO;
+			free(closure);
+			return NULL;
 		}
 	}
 
