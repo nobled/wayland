@@ -312,11 +312,14 @@ wl_client_connection_update(struct wl_connection *connection,
 	return wl_event_source_fd_update(client->source, emask);
 }
 
-WL_EXPORT void
+WL_EXPORT int
 wl_client_flush(struct wl_client *client)
 {
+	struct wl_connection *connection = client->connection;
+
 	if (client->mask & WL_CONNECTION_WRITABLE)
-		wl_connection_data(client->connection, WL_CONNECTION_WRITABLE);
+		return wl_connection_data(connection, WL_CONNECTION_WRITABLE);
+	return 0;
 }
 
 WL_EXPORT struct wl_display *

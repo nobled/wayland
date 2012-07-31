@@ -104,7 +104,7 @@ uint32_t wl_display_next_serial(struct wl_display *display);
 
 struct wl_client *wl_client_create(struct wl_display *display, int fd);
 void wl_client_destroy(struct wl_client *client);
-void wl_client_flush(struct wl_client *client);
+int wl_client_flush(struct wl_client *client);
 void wl_client_get_credentials(struct wl_client *client,
 			       pid_t *pid, uid_t *uid, gid_t *gid);
 
