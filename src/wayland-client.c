@@ -64,6 +64,7 @@ struct wl_display {
 	struct wl_connection *connection;
 	int fd;
 	uint32_t mask;
+	uint32_t fatal_error;
 	struct wl_map objects;
 	struct wl_list global_listener_list;
 	struct wl_list global_list;
@@ -248,9 +249,10 @@ display_handle_error(void *data,
 		     struct wl_display *display, struct wl_object *object,
 		     uint32_t code, const char *message)
 {
-	fprintf(stderr, "%s@%u: error %d: %s\n",
-		object->interface->name, object->id, code, message);
-	abort();
+	wl_log("%s@%u: error %u: %s\n",
+	       object->interface->name, object->id, code, message);
+
+	display->fatal_error = true;
 }
 
 static void
@@ -424,6 +426,8 @@ wl_display_connect(const char *name)
 		return NULL;
 	}
 
+	display->fatal_error = false;
+
 	return display;
 }
 
@@ -577,6 +581,13 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 {
 	uint32_t p[2], object;
 	int len, opcode, size;
+
+	if (display->fatal_error) {
+		wl_log("Fatal error on wl_display %p: Call wl_display_destroy()"
+		       " and create a replacement display\n", (void*)display);
+		errno = EPROTO;
+		return -1;
+	}
 
 	mask &= display->mask;
 	if (mask == 0) {
