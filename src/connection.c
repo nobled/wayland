@@ -822,8 +822,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 			connection->fds_in.tail += sizeof *fd;
 			break;
 		default:
-			wl_log("unknown protocol argument type in %s\n",
-			       __func__);
+			wl_log("unknown protocol argument type '%c' in %s\n",
+			       arg.type, __func__);
 			assert(0 && "unknown protocol argument type");
 			errno = EPROTO;
 			goto err;
