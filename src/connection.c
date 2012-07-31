@@ -468,21 +468,21 @@ wl_closure_vmarshal(struct wl_object *sender,
 			closure->types[i] = &ffi_type_sint32;
 			closure->args[i] = p;
 			if (end - p < 1)
-				goto err;
+				goto err_overflow;
 			*p++ = va_arg(ap, wl_fixed_t);
 			break;
 		case 'u':
 			closure->types[i] = &ffi_type_uint32;
 			closure->args[i] = p;
 			if (end - p < 1)
-				goto err;
+				goto err_overflow;
 			*p++ = va_arg(ap, uint32_t);
 			break;
 		case 'i':
 			closure->types[i] = &ffi_type_sint32;
 			closure->args[i] = p;
 			if (end - p < 1)
-				goto err;
+				goto err_overflow;
 			*p++ = va_arg(ap, int32_t);
 			break;
 		case 's':
@@ -498,7 +498,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 
 			length = s ? strlen(s) + 1: 0;
 			if (p + DIV_ROUNDUP(length, sizeof *p) + 1 > end)
-				goto err;
+				goto err_overflow;
 			*p++ = length;
 
 			if (length > 0)
@@ -522,7 +522,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 
 			*objectp = object;
 			if (end - p < 1)
-				goto err;
+				goto err_overflow;
 			*p++ = object ? object->id : 0;
 			break;
 
@@ -531,7 +531,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 			closure->args[i] = p;
 			object = va_arg(ap, struct wl_object *);
 			if (end - p < 1)
-				goto err;
+				goto err_overflow;
 
 			if (!arg.nullable && object == NULL)
 				goto err_null;
@@ -555,12 +555,12 @@ wl_closure_vmarshal(struct wl_object *sender,
 
 			if (array == NULL || array->size == 0) {
 				if (end - p < 1)
-					goto err;
+					goto err_overflow;
 				*p++ = 0;
 				break;
 			}
 			if (p + DIV_ROUNDUP(array->size, sizeof *p) + 1 > end)
-				goto err;
+				goto err_overflow;
 			*p++ = array->size;
 			memcpy(p, array->data, array->size);
 
@@ -609,10 +609,11 @@ wl_closure_vmarshal(struct wl_object *sender,
 
 	return closure;
 
-err:
-	printf("request too big to marshal, maximum size is %zu\n",
+err_overflow:
+	wl_log("request too big to marshal, maximum size is %zu\n",
 	       sizeof closure->buffer);
-	errno = ENOMEM;
+	free(closure);
+	errno = E2BIG;
 
 	return NULL;
 
