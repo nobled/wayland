@@ -1102,13 +1102,16 @@ wl_display_terminate(struct wl_display *display)
 	display->run = 0;
 }
 
-WL_EXPORT void
+WL_EXPORT int
 wl_display_run(struct wl_display *display)
 {
+	int ret = 0;
 	display->run = 1;
 
-	while (display->run)
-		wl_event_loop_dispatch(display->loop, -1);
+	while (display->run && !ret)
+		ret = wl_event_loop_dispatch(display->loop, -1);
+
+	return ret;
 }
 
 static int

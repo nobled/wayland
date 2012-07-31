@@ -86,7 +86,7 @@ void wl_display_destroy(struct wl_display *display);
 struct wl_event_loop *wl_display_get_event_loop(struct wl_display *display);
 int wl_display_add_socket(struct wl_display *display, const char *name);
 void wl_display_terminate(struct wl_display *display);
-void wl_display_run(struct wl_display *display);
+int wl_display_run(struct wl_display *display);
 
 typedef void (*wl_global_bind_func_t)(struct wl_client *client, void *data,
 				      uint32_t version, uint32_t id);
